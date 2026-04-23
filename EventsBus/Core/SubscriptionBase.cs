@@ -15,13 +15,7 @@ internal abstract class SubscriptionBase : ISubscription
         OwnerRef = new WeakReference(handler?.GetType().GetProperty("Target")?.GetValue(handler) ?? handler);
     }
 
-    public object Owner
-    {
-        get
-        {
-            return OwnerRef.Target;
-        }
-    }
+    public object Owner => OwnerRef.Target ?? throw new ArgumentNullException(nameof(OwnerRef.Target), "Target OwnerRef is null");
 
     public abstract Task HandleAsync(object @event, CancellationToken cancellationToken);
 }
