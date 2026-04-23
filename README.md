@@ -317,7 +317,7 @@ _eventBus.SubscribeAsync<UserEvent>(async (e, ct) =>
 
 ---
 
-## 📄 License
+## License
 
 Распространяется под лицензией **MIT**. См. файл [LICENSE](LICENSE) для деталей.
 
