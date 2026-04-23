@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventsBus.Core;
+namespace EventBusLib.Core;
 
 internal interface ISubscription
 {

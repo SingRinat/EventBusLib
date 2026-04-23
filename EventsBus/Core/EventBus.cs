@@ -1,5 +1,5 @@
-﻿using EventsBus.Diagnostics;
-using EventsBus.Models;
+﻿using EventBusLib.Diagnostics;
+using EventBusLib.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventsBus.Core;
+namespace EventBusLib.Core;
 
 /// <summary>
 /// Реализация шины событий с поддержкой синхронных/асинхронных подписок и слабых ссылок

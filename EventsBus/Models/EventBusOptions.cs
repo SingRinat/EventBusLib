@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EventsBus.Models;
+namespace EventBusLib.Models;
 
 /// <summary>
 /// Настройки шины событий

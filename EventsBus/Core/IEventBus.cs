@@ -1,11 +1,11 @@
-﻿using EventsBus.Diagnostics;
-using EventsBus.Models;
+﻿using EventBusLib.Diagnostics;
+using EventBusLib.Models;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventsBus.Core;
+namespace EventBusLib.Core;
 
 
 /// <summary>

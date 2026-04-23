@@ -1,9 +1,9 @@
-﻿using EventsBus.Models;
+﻿using EventBusLib.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventsBus.Core;
+namespace EventBusLib.Core;
 
 internal sealed class FilteredSyncSubscription<TEvent> : SubscriptionBase where TEvent : EventBase
 {

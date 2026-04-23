@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EventsBus.Diagnostics;
+namespace EventBusLib.Diagnostics;
 
 /// <summary>
 /// Метрики производительности шины событий

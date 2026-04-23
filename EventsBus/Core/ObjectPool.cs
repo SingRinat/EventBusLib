@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace EventsBus.Core;
+namespace EventBusLib.Core;
 
 internal sealed class ObjectPool<T> : IDisposable where T : class
 {

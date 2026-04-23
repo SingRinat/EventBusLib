@@ -1,11 +1,11 @@
-﻿using EventsBus.Core;
+﻿using EventBusLib.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventsBus.Diagnostics;
+namespace EventBusLib.Diagnostics;
 
 /// <summary>
 /// Health check для шины событий

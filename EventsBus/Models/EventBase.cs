@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace EventsBus.Models;
+namespace EventBusLib.Models;
 
 /// <summary>
 /// Базовый класс для всех событий в шине

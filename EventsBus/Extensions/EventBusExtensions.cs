@@ -1,10 +1,10 @@
-﻿using EventsBus.Core;
-using EventsBus.Models;
+﻿using EventBusLib.Core;
+using EventBusLib.Models;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace EventsBus.Extensions;
+namespace EventBusLib.Extensions;
 
 /// <summary>
 /// Полезные методы расширения для работы с EventBus

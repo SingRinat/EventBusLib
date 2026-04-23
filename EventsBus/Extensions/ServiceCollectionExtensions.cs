@@ -1,11 +1,11 @@
-﻿using EventsBus.Core;
-using EventsBus.Diagnostics;
-using EventsBus.Models;
+﻿using EventBusLib.Core;
+using EventBusLib.Diagnostics;
+using EventBusLib.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace EventsBus.Extensions;
+namespace EventBusLib.Extensions;
 
 /// <summary>
 /// Методы расширения для регистрации EventBus в DI контейнере

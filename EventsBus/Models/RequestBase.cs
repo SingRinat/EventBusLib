@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EventsBus.Models;
+namespace EventBusLib.Models;
 
 /// <summary>
 /// Базовый класс для запросов к шине (паттерн Request/Response)
