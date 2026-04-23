@@ -15,7 +15,7 @@ namespace EventBusLib.Core;
 /// <summary>
 /// Реализация шины событий с поддержкой синхронных/асинхронных подписок и слабых ссылок
 /// </summary>
-public sealed class EventBus : IEventBus
+public sealed class EventBus : IEventBus, IAsyncDisposable, IDisposable
 {
     private readonly ILogger<EventBus> _logger;
     private readonly EventBusOptions _options;
