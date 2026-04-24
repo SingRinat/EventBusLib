@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="../../Example/Example/Example.csproj">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="EventsBus/EventBusLib.csproj" />
 </Solution>
