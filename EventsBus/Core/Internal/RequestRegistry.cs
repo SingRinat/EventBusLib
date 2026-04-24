@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace EventBusLib.Core.Internal;
+﻿namespace EventBusLib.Core.Internal;
 
 internal sealed class RequestRegistry<TReq, TRes>
 {
