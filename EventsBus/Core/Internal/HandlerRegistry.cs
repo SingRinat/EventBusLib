@@ -1,7 +1,6 @@
 ﻿using EventBusLib.Dispatching;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,7 +20,13 @@ internal sealed class HandlerRegistry<T> : IRegistryCleanup
     {
         var wrapper = new WeakSyncHandler<T>(handler, marshalToUiThread, dispatcher, onError);
         var disposable = new Unsubscriber(() => { lock (_lock) _syncHandlers.Remove(wrapper); });
-        lock (_lock) _syncHandlers.Add(wrapper);
+        
+        lock (_lock)
+        {
+            _syncHandlers.Add(wrapper);
+            CompactIfNeededLocked();
+        }
+        
         return disposable;
     }
 
@@ -29,49 +34,120 @@ internal sealed class HandlerRegistry<T> : IRegistryCleanup
     {
         var wrapper = new WeakAsyncHandler<T>(handler, marshalToUiThread, dispatcher, onError);
         var disposable = new Unsubscriber(() => { lock (_lock) _asyncHandlers.Remove(wrapper); });
-        lock (_lock) _asyncHandlers.Add(wrapper);
+        
+        lock (_lock)
+        {
+            _asyncHandlers.Add(wrapper);
+            CompactIfNeededLocked();
+        }
+        
         return disposable;
     }
 
     public void Publish(T payload, Action<Exception>? onError)
     {
-        List<WeakSyncHandler<T>> syncSnapshot;
-        List<WeakAsyncHandler<T>> asyncSnapshot;
+        WeakSyncHandler<T>[] syncSnapshot;
+        WeakAsyncHandler<T>[] asyncSnapshot;
 
         lock (_lock)
         {
-            syncSnapshot = _syncHandlers.ToList();
-            asyncSnapshot = _asyncHandlers.ToList();
-            CompactIfNeeded();
+            syncSnapshot = _syncHandlers.ToArray();
+            asyncSnapshot = _asyncHandlers.ToArray();
         }
 
-        foreach (var h in syncSnapshot) h.Invoke(payload);
+        // Синхронные вызовы
+        foreach (var h in syncSnapshot)
+        {
+            try
+            {
+                h.Invoke(payload);
+            }
+            catch (Exception ex)
+            {
+                onError?.Invoke(ex);
+            }
+        }
 
-        // Fire-and-forget для асинхронных в синхронном Publish
-        _ = Task.WhenAll(asyncSnapshot.Select(h => h.InvokeAsync(payload, CancellationToken.None)));
+        // Асинхронные вызовы (fire-and-forget с полной изоляцией исключений)
+        if (asyncSnapshot.Length > 0)
+        {
+            _ = Task.Run(async () =>
+            {
+                foreach (var h in asyncSnapshot)
+                {
+                    try
+                    {
+                        await h.InvokeAsync(payload, CancellationToken.None);
+                    }
+                    catch (Exception ex)
+                    {
+                        onError?.Invoke(ex);
+                    }
+                }
+            });
+        }
     }
 
     public async Task PublishAsync(T payload, CancellationToken ct, Action<Exception>? onError)
     {
-        List<WeakSyncHandler<T>> syncSnapshot;
-        List<WeakAsyncHandler<T>> asyncSnapshot;
+        WeakSyncHandler<T>[] syncSnapshot;
+        WeakAsyncHandler<T>[] asyncSnapshot;
 
         lock (_lock)
         {
-            syncSnapshot = _syncHandlers.ToList();
-            asyncSnapshot = _asyncHandlers.ToList();
-            CompactIfNeeded();
+            syncSnapshot = _syncHandlers.ToArray();
+            asyncSnapshot = _asyncHandlers.ToArray();
         }
 
-        var tasks = new List<Task>(syncSnapshot.Count + asyncSnapshot.Count);
+        var tasks = new List<Task>(syncSnapshot.Length + asyncSnapshot.Length);
 
+        // Синхронные обработчики запускаем в пуле потоков
         foreach (var h in syncSnapshot)
-            tasks.Add(Task.Run(() => h.Invoke(payload), ct));
+        {
+            try
+            {
+                tasks.Add(Task.Run(() =>
+                {
+                    try
+                    {
+                        h.Invoke(payload);
+                    }
+                    catch (Exception ex)
+                    {
+                        onError?.Invoke(ex);
+                    }
+                }, ct));
+            }
+            catch (Exception ex)
+            {
+                onError?.Invoke(ex);
+            }
+        }
 
+        // Асинхронные обработчики
         foreach (var h in asyncSnapshot)
-            tasks.Add(h.InvokeAsync(payload, ct));
+        {
+            try
+            {
+                tasks.Add(h.InvokeAsync(payload, ct));
+            }
+            catch (Exception ex)
+            {
+                onError?.Invoke(ex);
+            }
+        }
 
-        await Task.WhenAll(tasks);
+        if (tasks.Count > 0)
+        {
+            try
+            {
+                await Task.WhenAll(tasks).WaitAsync(ct);
+            }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                onError?.Invoke(ex);
+            }
+        }
     }
 
     public void UnsubscribeAll()
@@ -85,11 +161,12 @@ internal sealed class HandlerRegistry<T> : IRegistryCleanup
 
     public void Cleanup()
     {
-        lock (_lock) CompactIfNeeded();
+        lock (_lock) CompactIfNeededLocked();
     }
 
-    private void CompactIfNeeded()
+    private void CompactIfNeededLocked()
     {
+        // Предполагается, что вызывается из блока lock
         _operationCount++;
         if (_operationCount < CleanupThreshold) return;
 
