@@ -29,12 +29,20 @@ internal sealed class WeakSyncHandler<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool Invoke(T payload)
     {
+        object? target = null;
+        
+        if (!_isStatic)
+        {
+            if (!_target.TryGetTarget(out target))
+                return false; // Объект собран GC
+        }
+        else
+        {
+            target = null;
+        }
+
         try
         {
-            object? target = _isStatic ? null : null;
-            if (!_isStatic && !_target.TryGetTarget(out target))
-                return false; // Объект собран, подписка мертва
-
             // Восстанавливаем делегат "на лету" (занимает ~100-200нс, для UI-событий незаметно)
             var del = (Action<T>)Delegate.CreateDelegate(typeof(Action<T>), target, _method);
 

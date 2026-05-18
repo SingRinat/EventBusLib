@@ -32,9 +32,11 @@ internal sealed class RequestRegistry<TReq, TRes>
             if (_handler is null)
                 throw new InvalidOperationException($"No handler registered for {typeof(TReq).Name} -> {typeof(TRes).Name}");
 
+            var handler = _handler;
+            
             try
             {
-                return await _handler(request, ct).WaitAsync(ct);
+                return await handler(request, ct).WaitAsync(ct);
             }
             catch (Exception ex)
             {

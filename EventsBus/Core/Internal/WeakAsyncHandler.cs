@@ -29,12 +29,20 @@ internal sealed class WeakAsyncHandler<T>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public async Task InvokeAsync(T payload, CancellationToken ct)
     {
+        object? target = null;
+        
+        if (!_isStatic)
+        {
+            if (!_target.TryGetTarget(out target))
+                return; // Объект собран GC
+        }
+        else
+        {
+            target = null;
+        }
+
         try
         {
-            object? target = _isStatic ? null : null;
-            if (!_isStatic && !_target.TryGetTarget(out target))
-                return;
-
             var del = (Func<T, CancellationToken, Task>)Delegate.CreateDelegate(
                 typeof(Func<T, CancellationToken, Task>), target, _method);
 
